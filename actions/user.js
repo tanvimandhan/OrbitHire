@@ -6,17 +6,20 @@ import { revalidatePath } from "next/cache";
 import { generateAIInsights } from "./dashboard";
 
 export async function updateUser(data) {
+  console.log('a');
   const { userId } = await auth();
+  console.log('b');
   if (!userId) throw new Error("Unauthorized");
-
+  
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-
+ 
   if (!user) throw new Error("User not found");
-
+  
   try {
     // Start a transaction to handle both operations
+    console.log('c');
     const result = await db.$transaction(
       async (tx) => {
         // First check if industry exists
@@ -25,11 +28,12 @@ export async function updateUser(data) {
             industry: data.industry,
           },
         });
-
+          console.log('d');
         // If industry doesn't exist, create it with default values
         if (!industryInsight) {
+          console.log('e');
           const insights = await generateAIInsights(data.industry);
-
+           console.log('f');
           industryInsight = await db.industryInsight.create({
             data: {
               industry: data.industry,
