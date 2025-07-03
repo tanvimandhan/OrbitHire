@@ -23,7 +23,9 @@ import useFetch from "@/hooks/use-fetch";
 import { useUser } from "@clerk/nextjs";
 import { entriesToMarkdown } from "@/app/lib/helper";
 import { resumeSchema } from "@/app/lib/schema";
-import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
+//import html2pdf from "html2pdf.js";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function ResumeBuilder({ initialContent }) {
   const [activeTab, setActiveTab] = useState("edit");
@@ -112,25 +114,57 @@ export default function ResumeBuilder({ initialContent }) {
 
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const generatePDF = async () => {
-    setIsGenerating(true);
-    try {
-      const element = document.getElementById("resume-pdf");
-      const opt = {
-        margin: [15, 15],
-        filename: "resume.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
+  // const generatePDF = async () => {
+  //   setIsGenerating(true);
+  //   try {
+  //     const element = document.getElementById("resume-pdf");
+  //     const opt = {
+  //       margin: [15, 15],
+  //       filename: "resume.pdf",
+  //       image: { type: "jpeg", quality: 0.98 },
+  //       html2canvas: { scale: 2 },
+  //       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+  //     };
 
-      await html2pdf().set(opt).from(element).save();
-    } catch (error) {
-      console.error("PDF generation error:", error);
-    } finally {
+  //     await html2pdf().set(opt).from(element).save();
+  //   } catch (error) {
+  //     console.error("PDF generation error:", error);
+  //   } finally {
+  //     setIsGenerating(false);
+  //   }
+  // };
+
+const generatePDF = async () => {
+  setIsGenerating(true);
+  try {
+    const element = document.getElementById("resume-pdf");
+    if (!element) {
+      console.error("Element with ID 'resume-pdf' not found.");
       setIsGenerating(false);
+      return;
     }
-  };
+
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save("resume.pdf");
+  } catch (error) {
+    console.error("PDF generation error:", error);
+  } finally {
+    setIsGenerating(false);
+  }
+};
 
   const onSubmit = async (data) => {
     try {
