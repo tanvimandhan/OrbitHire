@@ -5,7 +5,7 @@ import QuizList from "./_components/quiz-list";
 
 export default async function InterviewPrepPage() {
   const assessments = await getAssessments();
-
+ // const insights = await getInsightsForUser();  
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
