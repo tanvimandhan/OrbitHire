@@ -25,8 +25,10 @@ export default function PerformanceChart({ assessments }) {
   useEffect(() => {
     if (assessments) {
       const formattedData = assessments.map((assessment) => ({
-        date: format(new Date(assessment.createdAt), "MMM dd"),
-        score: assessment.quizScore,
+        // keep raw timestamp for chart accuracy
+        date: new Date(assessment.createdAt).getTime(),
+        // ensure score is numeric
+        score: Number(assessment.quizScore),
       }));
       setChartData(formattedData);
     }
@@ -45,7 +47,11 @@ export default function PerformanceChart({ assessments }) {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
+              <XAxis
+                dataKey="date"
+                // format timestamps into "Aug 25"
+                tickFormatter={(date) => format(new Date(date), "MMM dd")}
+              />
               <YAxis domain={[0, 100]} />
               <Tooltip
                 content={({ active, payload }) => {
@@ -56,7 +62,7 @@ export default function PerformanceChart({ assessments }) {
                           Score: {payload[0].value}%
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {payload[0].payload.date}
+                          {format(new Date(payload[0].payload.date), "MMM dd")}
                         </p>
                       </div>
                     );
@@ -67,8 +73,9 @@ export default function PerformanceChart({ assessments }) {
               <Line
                 type="monotone"
                 dataKey="score"
-                stroke="hsl(var(--primary))"
+                stroke="#4F46E5" // use a safe hex to confirm line visibility
                 strokeWidth={2}
+                dot={{ r: 4 }}
               />
             </LineChart>
           </ResponsiveContainer>

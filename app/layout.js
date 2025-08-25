@@ -40,7 +40,7 @@ export default function RootLayout({ children }) {
               <footer className="bg-muted/50 py-12">
                 <div className="container mx-auto px-4 text-center text-gray-200">
                   <p>
-                    made with love by tanvi
+                    Made with love by tanvi
                   </p>
                 </div>
               </footer>
